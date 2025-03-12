@@ -1,19 +1,6 @@
+# ---- Build Stage ----
 FROM node:22.7.0-alpine AS builder
 WORKDIR /app
-
-# Pass environment variables at build time
-ARG VITE_OIDC_ISSUER
-ARG VITE_OIDC_CLIENT_ID
-ARG VITE_BASE_URL
-ARG VITE_APP_VERSION
-ARG VITE_MOSAIC_GATEWAY_URL
-
-# Ensure these values are available in the build
-ENV VITE_OIDC_ISSUER=$VITE_OIDC_ISSUER
-ENV VITE_OIDC_CLIENT_ID=$VITE_OIDC_CLIENT_ID
-ENV VITE_BASE_URL=$VITE_BASE_URL
-ENV VITE_APP_VERSION=$VITE_APP_VERSION
-ENV VITE_MOSAIC_GATEWAY_URL=$VITE_MOSAIC_GATEWAY_URL
 
 # Copy only essential files first (better caching)
 COPY package.json package-lock.json ./
@@ -26,6 +13,7 @@ RUN npm run build
 FROM node:22.7.0-alpine AS runner
 WORKDIR /app
 
+# Install serve only in final stage (no global install)
 RUN npm install --omit=dev serve
 
 # Copy only the built dist folder & package.json
